@@ -1,76 +1,314 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HY320 Bluetooth Test</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Barcode & Exp Date Printer</title>
+
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
 <style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
 body{
-    background:#111;
-    color:white;
-    font-family:Arial,sans-serif;
-    text-align:center;
-    padding:20px;
+background:#f5f5f5;
+padding:20px;
 }
+
+.container{
+max-width:500px;
+margin:auto;
+background:#fff;
+padding:20px;
+border-radius:12px;
+box-shadow:0 4px 15px rgba(0,0,0,.15);
+}
+
+h2{
+text-align:center;
+margin-bottom:20px;
+}
+
+.input-group{
+margin-bottom:12px;
+}
+
+label{
+display:block;
+font-size:14px;
+margin-bottom:4px;
+font-weight:600;
+}
+
+input{
+width:100%;
+padding:10px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
 button{
-    width:120px;
-    height:50px;
-    margin:8px;
-    border:none;
-    border-radius:12px;
-    font-size:16px;
+width:100%;
+padding:12px;
+border:none;
+border-radius:8px;
+background:#007bff;
+color:white;
+font-weight:600;
+cursor:pointer;
+margin-top:10px;
 }
-.connect{
-    background:#00c853;
-    color:white;
+
+button:hover{
+opacity:.9;
 }
-.control{
-    background:#2196f3;
-    color:white;
+
+.preview{
+margin-top:20px;
+display:flex;
+justify-content:center;
 }
+
+.label-preview{
+width:30mm;
+height:20mm;
+border:1px solid #000;
+padding:2mm;
+background:#fff;
+}
+
+.label-name{
+font-size:6px;
+font-weight:bold;
+text-align:center;
+line-height:1;
+margin-bottom:1mm;
+}
+
+.label-exp{
+font-size:6px;
+font-weight:bold;
+text-align:center;
+margin-top:1mm;
+}
+
+@media print{
+
+body *{
+visibility:hidden;
+}
+
+#printArea,
+#printArea *{
+visibility:visible;
+}
+
+#printArea{
+position:absolute;
+left:0;
+top:0;
+width:70mm;
+}
+
+@page{
+size:70mm auto;
+margin:0;
+}
+
+}
+
+.sheet{
+width:70mm;
+display:grid;
+grid-template-columns:30mm 30mm;
+column-gap:2mm;
+row-gap:2mm;
+padding:2mm;
+}
+
+.label{
+width:30mm;
+height:20mm;
+border:1px solid #000;
+padding:2mm;
+overflow:hidden;
+}
+
+.name{
+font-size:6px;
+font-weight:bold;
+text-align:center;
+line-height:1;
+margin-bottom:1mm;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+
+.barcode{
+width:100%;
+height:8mm;
+}
+
+.exp{
+font-size:6px;
+font-weight:bold;
+text-align:center;
+margin-top:1mm;
+}
+
 </style>
 </head>
 <body>
 
-<h2>HY320 Bluetooth Test</h2>
+<div class="container">
 
-<button class="connect" onclick="connectBT()">
-Connect Bluetooth
+<h2>Print Barcode & Exp Date</h2>
+
+<div class="input-group">
+<label>Nama Produk</label>
+<input type="text" id="nama" value="BEEF BULGOGI (RTC)">
+</div>
+
+<div class="input-group">
+<label>Barcode</label>
+<input type="text" id="barcode" value="2100000117383">
+</div>
+
+<div class="input-group">
+<label>Exp Date</label>
+<input type="date" id="exp">
+</div>
+
+<div class="input-group">
+<label>Jumlah Cetak</label>
+<input type="number" id="qty" value="10">
+</div>
+
+<button onclick="previewLabel()">
+Preview
 </button>
 
-<br><br>
+<button onclick="printLabels()">
+Print Label
+</button>
 
-<button class="control">▲</button>
-<br>
-<button class="control">◀</button>
-<button class="control">OK</button>
-<button class="control">▶</button>
-<br>
-<button class="control">▼</button>
+<div class="preview" id="preview"></div>
 
-<p id="status">Belum terhubung</p>
+</div>
+
+<div id="printArea" style="display:none;"></div>
 
 <script>
-let device;
 
-async function connectBT(){
-    try{
-        device = await navigator.bluetooth.requestDevice({
-            acceptAllDevices:true,
-            optionalServices:[]
-        });
+function formatDate(dateStr){
 
-        document.getElementById("status").innerHTML =
-        "Terhubung ke: " + device.name;
+if(!dateStr) return "";
 
-        console.log(device);
+const d = new Date(dateStr);
 
-    }catch(err){
-        document.getElementById("status").innerHTML =
-        "Gagal: " + err.message;
-    }
+const dd = String(d.getDate()).padStart(2,'0');
+const mm = String(d.getMonth()+1).padStart(2,'0');
+const yy = d.getFullYear();
+
+return `${dd}/${mm}/${yy}`;
 }
+
+function previewLabel(){
+
+const nama=document.getElementById("nama").value;
+const barcode=document.getElementById("barcode").value;
+const exp=formatDate(document.getElementById("exp").value);
+
+document.getElementById("preview").innerHTML=`
+
+<div class="label-preview">
+
+<div class="label-name">${nama}</div>
+
+<svg id="previewBarcode"></svg>
+
+<div class="label-exp">
+EXP : ${exp}
+</div>
+
+</div>
+
+`;
+
+JsBarcode("#previewBarcode", barcode, {
+format:"CODE128",
+displayValue:true,
+fontSize:8,
+height:25,
+margin:0
+});
+
+}
+
+function printLabels(){
+
+const nama=document.getElementById("nama").value;
+const barcode=document.getElementById("barcode").value;
+const exp=formatDate(document.getElementById("exp").value);
+const qty=parseInt(document.getElementById("qty").value);
+
+let html='<div class="sheet">';
+
+for(let i=0;i<qty;i++){
+
+html+=`
+
+<div class="label">
+
+<div class="name">${nama}</div>
+
+<svg class="barcode" id="bc${i}"></svg>
+
+<div class="exp">
+EXP : ${exp}
+</div>
+
+</div>
+
+`;
+
+}
+
+html+='</div>';
+
+const area=document.getElementById("printArea");
+
+area.innerHTML=html;
+area.style.display="block";
+
+for(let i=0;i<qty;i++){
+
+JsBarcode(`#bc${i}`, barcode, {
+format:"CODE128",
+displayValue:true,
+fontSize:8,
+height:25,
+margin:0
+});
+
+}
+
+setTimeout(()=>{
+window.print();
+},300);
+
+}
+
+previewLabel();
+
 </script>
 
 </body>
