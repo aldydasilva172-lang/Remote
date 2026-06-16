@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Label Printer 30x15mm</title>
+<title>LABEL PRINTER 30x15mm</title>
 
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
@@ -14,19 +14,19 @@
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:Poppins,sans-serif;
+font-family:Arial,sans-serif;
 }
 
 body{
 background:#f5f5f5;
-padding:15px;
+padding:20px;
 }
 
 .container{
 max-width:550px;
 margin:auto;
 background:#fff;
-padding:15px;
+padding:20px;
 border-radius:12px;
 box-shadow:0 4px 15px rgba(0,0,0,.15);
 }
@@ -46,9 +46,9 @@ margin-bottom:15px;
 flex:1;
 padding:12px;
 border:none;
-cursor:pointer;
 border-radius:8px;
-font-weight:600;
+cursor:pointer;
+font-weight:bold;
 background:#e5e5e5;
 }
 
@@ -72,8 +72,8 @@ margin-bottom:12px;
 label{
 display:block;
 font-size:13px;
-font-weight:600;
-margin-bottom:4px;
+font-weight:bold;
+margin-bottom:5px;
 }
 
 input{
@@ -86,19 +86,19 @@ border-radius:8px;
 .btn{
 width:100%;
 padding:12px;
+margin-top:8px;
 border:none;
 border-radius:8px;
 background:#007bff;
-color:white;
-font-weight:600;
+color:#fff;
+font-weight:bold;
 cursor:pointer;
-margin-top:8px;
 }
 
 .preview{
-margin-top:15px;
 display:flex;
 justify-content:center;
+margin-top:20px;
 }
 
 .label-preview{
@@ -114,19 +114,31 @@ overflow:hidden;
 font-size:5px;
 font-weight:bold;
 text-align:center;
-line-height:1;
 white-space:nowrap;
 overflow:hidden;
 }
 
-.preview-exp{
-font-size:8px;
-font-weight:bold;
+.exp-preview{
 height:100%;
 display:flex;
 justify-content:center;
 align-items:center;
-text-align:center;
+font-size:8px;
+font-weight:700;
+}
+
+.two-date{
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+font-size:7px;
+font-weight:700;
+}
+
+.two-date span:first-child{
+margin-bottom:2px;
 }
 
 .print-sheet{
@@ -146,28 +158,35 @@ padding:1mm;
 overflow:hidden;
 }
 
-.name{
+.label-name{
 font-size:5px;
 font-weight:bold;
 text-align:center;
-line-height:1;
 white-space:nowrap;
 overflow:hidden;
 }
 
-.expText{
-font-size:8px;
-font-weight:bold;
-display:flex;
-align-items:center;
-justify-content:center;
+.exp-text{
 height:100%;
-text-align:center;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:8px;
+font-weight:700;
 }
 
-.barcode{
-width:100%;
-height:8mm;
+.two-date-print{
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+font-size:7px;
+font-weight:700;
+}
+
+.two-date-print span:first-child{
+margin-bottom:2px;
 }
 
 @media print{
@@ -201,16 +220,25 @@ margin:0;
 
 <div class="container">
 
-<h2>LABEL PRINTER 30x15 mm</h2>
+<h2>LABEL PRINTER 30x15mm</h2>
 
 <div class="tabs">
-<button class="tab active" onclick="showTab('barcode')">
+
+<button class="tab active"
+onclick="showTab('barcode',this)">
 Barcode
 </button>
 
-<button class="tab" onclick="showTab('exp')">
+<button class="tab"
+onclick="showTab('exp',this)">
 Exp Date
 </button>
+
+<button class="tab"
+onclick="showTab('date2',this)">
+2 Tanggal
+</button>
+
 </div>
 
 <!-- BARCODE -->
@@ -219,7 +247,7 @@ Exp Date
 
 <div class="input-group">
 <label>Nama Produk</label>
-<input id="nama" value="BEEF BULGOGI (RTC)">
+<input id="nama" value="BEEF BULGOGI">
 </div>
 
 <div class="input-group">
@@ -270,13 +298,44 @@ Print Exp
 
 </div>
 
+<!-- 2 TANGGAL -->
+
+<div id="date2" class="panel">
+
+<div class="input-group">
+<label>Tanggal Atas</label>
+<input id="tgl1" type="date">
+</div>
+
+<div class="input-group">
+<label>Tanggal Bawah</label>
+<input id="tgl2" type="date">
+</div>
+
+<div class="input-group">
+<label>Jumlah Cetak</label>
+<input id="dateQty" type="number" value="10">
+</div>
+
+<button class="btn" onclick="previewDate2()">
+Preview 2 Tanggal
+</button>
+
+<button class="btn" onclick="printDate2()">
+Print 2 Tanggal
+</button>
+
+<div class="preview" id="datePreview"></div>
+
+</div>
+
 </div>
 
 <div id="printArea" style="display:none"></div>
 
 <script>
 
-function showTab(id){
+function showTab(id,btn){
 
 document.querySelectorAll('.panel')
 .forEach(x=>x.classList.remove('active'));
@@ -287,7 +346,7 @@ document.querySelectorAll('.tab')
 document.getElementById(id)
 .classList.add('active');
 
-event.target.classList.add('active');
+btn.classList.add('active');
 
 }
 
@@ -305,6 +364,8 @@ return `${dd}/${mm}/${yy}`;
 
 }
 
+/* BARCODE */
+
 function previewBarcode(){
 
 const nama=document.getElementById('nama').value;
@@ -313,11 +374,8 @@ const code=document.getElementById('barcodeValue').value;
 document.getElementById('barcodePreview').innerHTML=`
 
 <div class="label-preview">
-
 <div class="preview-name">${nama}</div>
-
 <svg id="previewSvg"></svg>
-
 </div>
 
 `;
@@ -332,33 +390,11 @@ margin:0
 
 }
 
-function previewExp(){
-
-const exp=formatDate(
-document.getElementById('expDate').value
-);
-
-document.getElementById('expPreview').innerHTML=`
-
-<div class="label-preview">
-
-<div class="preview-exp">
-EXP<br>${exp}
-</div>
-
-</div>
-
-`;
-
-}
-
 function printBarcode(){
 
 const nama=document.getElementById('nama').value;
 const code=document.getElementById('barcodeValue').value;
-const qty=parseInt(
-document.getElementById('barcodeQty').value
-);
+const qty=parseInt(document.getElementById('barcodeQty').value);
 
 let html='<div class="print-sheet">';
 
@@ -367,11 +403,8 @@ for(let i=0;i<qty;i++){
 html+=`
 
 <div class="label">
-
-<div class="name">${nama}</div>
-
+<div class="label-name">${nama}</div>
 <svg id="bc${i}"></svg>
-
 </div>
 
 `;
@@ -380,10 +413,8 @@ html+=`
 
 html+='</div>';
 
-const area=document.getElementById('printArea');
-
-area.innerHTML=html;
-area.style.display='block';
+printArea.innerHTML=html;
+printArea.style.display='block';
 
 for(let i=0;i<qty;i++){
 
@@ -397,9 +428,25 @@ margin:0
 
 }
 
-setTimeout(()=>{
-window.print();
-},300);
+setTimeout(()=>window.print(),300);
+
+}
+
+/* EXP */
+
+function previewExp(){
+
+const exp=formatDate(
+document.getElementById('expDate').value
+);
+
+document.getElementById('expPreview').innerHTML=`
+
+<div class="label-preview">
+<div class="exp-preview">${exp}</div>
+</div>
+
+`;
 
 }
 
@@ -420,9 +467,74 @@ for(let i=0;i<qty;i++){
 html+=`
 
 <div class="label">
+<div class="exp-text">${exp}</div>
+</div>
 
-<div class="expText">
-EXP<br>${exp}
+`;
+
+}
+
+html+='</div>';
+
+printArea.innerHTML=html;
+printArea.style.display='block';
+
+setTimeout(()=>window.print(),300);
+
+}
+
+/* 2 TANGGAL */
+
+function previewDate2(){
+
+const atas=formatDate(
+document.getElementById('tgl1').value
+);
+
+const bawah=formatDate(
+document.getElementById('tgl2').value
+);
+
+document.getElementById('datePreview').innerHTML=`
+
+<div class="label-preview">
+
+<div class="two-date">
+<span>${atas}</span>
+<span>${bawah}</span>
+</div>
+
+</div>
+
+`;
+
+}
+
+function printDate2(){
+
+const atas=formatDate(
+document.getElementById('tgl1').value
+);
+
+const bawah=formatDate(
+document.getElementById('tgl2').value
+);
+
+const qty=parseInt(
+document.getElementById('dateQty').value
+);
+
+let html='<div class="print-sheet">';
+
+for(let i=0;i<qty;i++){
+
+html+=`
+
+<div class="label">
+
+<div class="two-date-print">
+<span>${atas}</span>
+<span>${bawah}</span>
 </div>
 
 </div>
@@ -433,14 +545,10 @@ EXP<br>${exp}
 
 html+='</div>';
 
-const area=document.getElementById('printArea');
+printArea.innerHTML=html;
+printArea.style.display='block';
 
-area.innerHTML=html;
-area.style.display='block';
-
-setTimeout(()=>{
-window.print();
-},300);
+setTimeout(()=>window.print(),300);
 
 }
 
